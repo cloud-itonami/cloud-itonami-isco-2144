@@ -1,0 +1,34 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a field-inspection robot performs equipment
+;; measurement, vibration sensing and physical component inspection for
+;; mechanical engineers (ISCO 2144). The physical work: checking that the
+;; lagging on a hot process pipe keeps its outer surface touch-safe, and
+;; lifting a coupling guard off a pump to inspect the coupling.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-2144"
+ :cases
+ [{:id :hot-pipe-lagging-check
+   :kind :thermal
+   :procedure "robot measures the outer surface of mineral-wool lagging on a 180 C steam line after a full shift at temperature"
+   :params {:conductivity-w-mk 0.04 :density-kg-m3 100.0 :specific-heat-j-kgk 840.0
+            :t0-c 25.0 :t-hot-c 180.0 :front-fixed? true
+            :t-back-ambient-c 25.0 :h-back-w-m2k 10.0
+            :threshold-c 60.0 :duration-s 28800.0 :nodes 11}
+   :sweep {:param :thickness-m :values [0.01 0.02 0.03 0.05 0.08]}
+   :quantity :final-back-c
+   :limit {:max 60.0 :basis "estimate: 60 C taken as a touch-safe surface temperature for lagging within reach"}
+   :boundary {:lo 0.005 :hi 0.1}}
+  {:id :coupling-guard-lift
+   :kind :manipulator
+   :procedure "arm lifts the steel coupling guard off a pump skid and sets it on the floor beside the skid"
+   :params {:l1-m 0.50 :l2-m 0.45 :m1-kg 5.0 :m2-kg 4.0
+            :from [0.60 0.10] :to [0.40 -0.30] :duration-s 2.5 :steps 500}
+   :sweep {:param :payload-kg :values [2.0 4.0 6.0 9.0 12.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 90.0 :basis "estimate: continuous shoulder torque of a ~10 kg payload class collaborative arm on a mobile inspection base"}
+   :boundary {:lo 0.5 :hi 40.0}}]}
